@@ -1,3 +1,4 @@
+
 import socket
 
 def scan_port(host, port, timeout=1.0):
