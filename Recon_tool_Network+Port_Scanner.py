@@ -170,6 +170,9 @@ def network_and_port_scanner():
     if not active_hosts:
         print("No active hosts found. Exiting.")
         return
+        # log empty run as well if you want
+        log_recon_results(subnet_input, [], active_hosts, {}, max_workers, timeout=0.0)
+        return
 
     # Ask which ports to scan on each active host
     print("\nNow choose which ports to scan on each active host.")
@@ -201,6 +204,9 @@ def network_and_port_scanner():
             print(f"{host}: open ports -> {', '.join(str(p) for p in open_ports)}")
         else:
             print(f"{host}: no scanned ports open.")
+    
+    # Log to file
+    log_recon_results(subnet_input, ports, active_hosts, summary, max_workers, timeout)
 
 if __name__ == "__main__":
     network_and_port_scanner()
