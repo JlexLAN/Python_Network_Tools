@@ -3,6 +3,9 @@ import ipaddress
 import concurrent.futures
 import time
 import socket
+from datetime import datetime
+
+LOG_FILE = "network_recon_log.txt"
 
 # ---------- PING PHASE ----------
 
@@ -109,6 +112,45 @@ def scan_ports_for_host(host, ports, timeout=1.0):
     else:
         print(f"  No open ports found on {host}.")
     return open_ports
+
+# ---------- LOGGING ----------
+
+def log_recon_results(subnet, ports, active_hosts, summary, max_workers, timeout):
+    """
+    Append a readable summary of the recon results to LOG_FILE.
+    - subnet: string
+    - ports: list of ints
+    - active_hosts: list of IP strings
+    - summary: dict {host: [open_ports]}
+    """
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
+        f.write(f"[{timestamp}] Network Recon Results\n")
+        f.write(f"Subnet: {subnet}\n")
+        f.write(f"Ping threads: {max_workers}\n")
+        f.write(f"Port timeout: {timeout:.2f}s\n")
+        f.write(f"Ports scanned: {', '.join(str(p) for p in ports)}\n")
+        f.write(f"Active hosts found: {len(active_hosts)}\n")
+
+        if active_hosts:
+            f.write("Active hosts:\n")
+            for host in active_hosts:
+                f.write(f"  - {host}\n")
+
+        f.write("Per-host open ports:\n")
+        if not summary:
+            f.write("  (no hosts / no open ports)\n")
+        else:
+            for host, open_ports in summary.items():
+                if open_ports:
+                    ports_str = ", ".join(str(p) for p in open_ports)
+                    f.write(f"  {host}: {ports_str}\n")
+                else:
+                    f.write(f"  {host}: no scanned ports open\n")
+
+        f.write("-" * 60 + "\n")
+
+    print(f"\n📝 Results logged to '{LOG_FILE}'")
 
 # ---------- MAIN GLUE ----------
 
